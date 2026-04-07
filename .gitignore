@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+
+# 日志
+logs/
+*.log
+
+# 输出文件（日报等）
+output/
+
+# 敏感配置（包含API Key等）
+config/config.yaml
+config/keywords.json
+src/config/config.yaml
+src/config/keywords.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.bak
