@@ -38,6 +38,13 @@ class ConfigLoader:
         with open(config_file, "r", encoding="utf-8") as f:
             self._config = yaml.safe_load(f)
 
+        # 环境变量优先：DEEPSEEK_API_KEY 覆盖 config.yaml 中的 api_key
+        env_api_key = os.environ.get("DEEPSEEK_API_KEY", "")
+        if env_api_key:
+            if "llm" not in self._config:
+                self._config["llm"] = {}
+            self._config["llm"]["api_key"] = env_api_key
+
     def _load_keywords(self):
         keywords_file = self.config_dir / "keywords.json"
         if not keywords_file.exists():

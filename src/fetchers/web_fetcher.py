@@ -30,6 +30,7 @@ class WebFetcher(BaseFetcher):
         url = source_config.get("url", "")
         name = source_config.get("name", "未知来源")
         list_selector = source_config.get("list_selector", "a")
+        is_priority = source_config.get("priority", "") == "high"
         articles = []
 
         if self.logger:
@@ -55,6 +56,8 @@ class WebFetcher(BaseFetcher):
                         continue
                     if not self._is_within_time_range(article.publish_time):
                         continue
+                    if is_priority:
+                        article.is_important = True
                     articles.append(article)
                     time.sleep(self.request_interval)
                 except Exception as e:
@@ -257,7 +260,18 @@ class WebFetcher(BaseFetcher):
                     continue
 
         # 备用2：只有年月的URL（如盖世汽车 /202604/5I704...）
-        m = re.search(r'/(\d{4})(\d{2})/\w', url)
+        # 盖世汽车URL格式: /202604/15I70453706C108.shtml (年月+日+ID)
+        m = re.search(r'/(\d{4})(\d{2})/(\d{1,2})\w', url)
+        if m:
+            try:
+                y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+                if 2024 <= y <= 2030 and 1 <= mo <= 12 and 1 <= d <= 31:
+                    return datetime(y, mo, d)
+            except (ValueError, IndexError):
+                pass
+
+        # 备用3：只有年月的URL（无日期）
+        m = re.search(r'/(\d{4})(\d{2})/\D', url)
         if m:
             try:
                 y, mo = int(m.group(1)), int(m.group(2))

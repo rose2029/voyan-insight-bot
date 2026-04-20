@@ -161,10 +161,15 @@ def run_daily_report(loader: ConfigLoader, logger, notification,
     # 2.5 按相关性排序并限制最多20条
     MAX_ARTICLES = 20
     if len(filtered_articles) > MAX_ARTICLES:
-        # 按相关性评分降序排列
-        filtered_articles.sort(key=lambda a: a.relevance_score, reverse=True)
-        filtered_articles = filtered_articles[:MAX_ARTICLES]
-        logger.info(f"按相关性筛选后保留 {len(filtered_articles)} 条新闻（上限{MAX_ARTICLES}条）")
+        # 优先保留标记为重要的文章（priority: high 的数据源）
+        important = [a for a in filtered_articles if getattr(a, 'is_important', False)]
+        normal = [a for a in filtered_articles if not getattr(a, 'is_important', False)]
+        # 各自按相关性排序
+        important.sort(key=lambda a: a.relevance_score, reverse=True)
+        normal.sort(key=lambda a: a.relevance_score, reverse=True)
+        # 重要文章优先，剩余名额按相关性填充
+        filtered_articles = (important + normal)[:MAX_ARTICLES]
+        logger.info(f"按相关性筛选后保留 {len(filtered_articles)} 条新闻（上限{MAX_ARTICLES}条，其中{len(important)}条重要来源）")
 
     # 打印筛选结果概览
     for article in filtered_articles:

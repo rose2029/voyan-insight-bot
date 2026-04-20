@@ -20,6 +20,7 @@ class NewsArticle:
     category: str = ""  # 层面分类（筛选后填充）
     relevance_score: float = 0.0  # 相关性得分
     is_marked: bool = False  # 是否标记为重要（半月报用）
+    is_important: bool = False  # 是否为重要来源（priority: high 的数据源）
     matched_keywords: List[str] = field(default_factory=list)
 
     @property
@@ -76,9 +77,13 @@ class BaseFetcher(ABC):
         pass
 
     def _is_within_time_range(self, publish_time: Optional[datetime]) -> bool:
-        """检查发布时间是否在指定范围内"""
+        """检查发布时间是否在指定范围内
+
+        策略：有明确发布日期时按日期过滤；无日期时默认保留，
+        因为文章出现在当前新闻列表页上，本身就说明是近期内容。
+        """
         if publish_time is None:
-            return False  # 无法确定日期时默认丢弃，避免旧新闻混入
+            return True  # 无日期时保留（出现在列表页即代表近期）
         from datetime import timedelta
         cutoff = datetime.now() - timedelta(hours=self.hours_range)
         return publish_time >= cutoff
