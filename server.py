@@ -12,6 +12,10 @@ from datetime import datetime
 from pathlib import Path
 from flask import Flask, request, jsonify, send_file, send_from_directory
 
+# 如果环境变量中没有 DEEPSEEK_API_KEY，使用默认值
+if not os.environ.get("DEEPSEEK_API_KEY"):
+    os.environ["DEEPSEEK_API_KEY"] = "sk-7e580fa3f7f34f8da0593ab929fbf365"
+
 # 确保项目根目录在 Python 路径中
 PROJECT_ROOT = Path(__file__).parent
 if str(PROJECT_ROOT) not in sys.path:
